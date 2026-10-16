@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0B7F70">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Meha</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800&amp;family=Nunito:wght@500;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:'Nunito','Cairo',system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer;transition:transform .15s ease,background .25s ease,opacity .25s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{cursor:default}
+input[type=text]{font-family:inherit}
+label.up:focus-within{outline:3px solid #fff;outline-offset:2px}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes tabR{from{opacity:0;transform:translateX(36px)}to{opacity:1;transform:none}}
+@keyframes tabL{from{opacity:0;transform:translateX(-36px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.2)}60%{transform:scale(1.3)}100%{transform:scale(1)}}
+@keyframes bumpA{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+@keyframes bumpB{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+@keyframes spin{0%{transform:rotate(-20deg) scale(.4)}60%{transform:rotate(12deg) scale(1.25)}100%{transform:rotate(0) scale(1)}}
+@keyframes flick{0%,100%{transform:scale(1) rotate(-1deg)}50%{transform:scale(1.06,1.12) rotate(1.5deg)}}
+@keyframes burstA{0%{transform:scale(.5) rotate(-18deg)}50%{transform:scale(1.4) rotate(8deg)}100%{transform:scale(1)}}
+@keyframes burstB{0%{transform:scale(.5) rotate(-18deg)}50%{transform:scale(1.4) rotate(8deg)}100%{transform:scale(1)}}
+@keyframes ringA{0%{transform:scale(.6);opacity:.55}100%{transform:scale(2.1);opacity:0}}
+@keyframes ringB{0%{transform:scale(.6);opacity:.55}100%{transform:scale(2.1);opacity:0}}
+@keyframes decoSpin{to{transform:rotate(360deg)}}
+@keyframes decoPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.05);opacity:.75}}
+@keyframes twinkle{0%,100%{opacity:.2;transform:scale(.4)}50%{opacity:1;transform:scale(1.2)}}
+@keyframes decoSpinRev{to{transform:rotate(-360deg)}}
+@keyframes particleUp{0%{opacity:0;transform:translateY(8px) scale(.6)}25%{opacity:1}100%{opacity:0;transform:translateY(-18px) scale(1)}}
+@keyframes particleDown{0%{opacity:0;transform:translateY(-10px)}25%{opacity:1}100%{opacity:0;transform:translateY(14px)}}
+@keyframes flameWave{0%,100%{transform:scale(1,1) skewX(0)}30%{transform:scale(.88,1.25) skewX(7deg)}60%{transform:scale(1.06,.9) skewX(-6deg)}}
+@keyframes zap{0%,100%{opacity:.12}8%{opacity:1}14%{opacity:.2}22%{opacity:1}30%{opacity:.12}}
+@keyframes flow{to{stroke-dashoffset:-96}}
+@keyframes ripple{0%{transform:scale(.92);opacity:.9}100%{transform:scale(1.18);opacity:0}}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.4)}30%{transform:scale(1)}45%{transform:scale(1.28)}60%{transform:scale(1)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes toastIn{0%{opacity:0;transform:translateY(-22px)}12%{opacity:1;transform:none}85%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-10px)}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+
+<style>
+html,body{height:100%;margin:0;overflow:hidden;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+#app{height:100%}
+#app>div{width:100% !important;height:100% !important;max-width:520px;margin:0 auto;padding-top:env(safe-area-inset-top)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<template id="tpl">
+
+<div dir="{{dir}}" style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: {{c.bg}}; color: {{c.text}}; overflow: hidden; position: relative">
+<div style="flex: 1; overflow-y: auto; padding: 28px 20px 16px; display: flex; flex-direction: column; gap: 16px; min-height: 0">
+
+<sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 16px; animation: {{tabAnim}}">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px">
+<div style="min-width: 0">
+<div style="font-size: 14px; color: {{c.sub}}; font-weight: 700">{{dateLabel}}</div>
+<h1 style="margin: 0; font-size: {{f.h1}}; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{displayName}}</h1>
+</div>
+<div style="flex: none; background: {{c.accentSoft}}; color: {{c.accentText}}; padding: 10px 16px; border-radius: 999px; font-weight: 800; font-size: {{f.body}}; animation: {{bump}}">{{points}} {{L.pts}}</div>
+</div>
+
+<div style="background: {{c.card}}; border-radius: 24px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; gap: 16px">
+<button onClick="{{ openSched }}" aria-label="{{ L.schedule }}" style="position: relative; width: 64px; height: 64px; flex: none; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; padding: 0">
+<div style="position: absolute; width: 64px; height: 64px; border-radius: 50%; background: #FF8A2B; opacity: 0; animation: {{ringAnim}}"></div>
+<div style="animation: {{burstAnim}}">
+<svg width="60" height="60" viewBox="0 0 64 64" style="filter: {{flameFilter}}; animation: {{flameLoop}}" aria-hidden="true">
+<defs><linearGradient id="flg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFB02E"></stop><stop offset="1" stop-color="#F0432B"></stop></linearGradient></defs>
+<path d="M32 3c3 10-8 15-8 28 0 5 3 9 8 9s8-4 8-9c0-4-2-7-2-7 8 5 12 12 12 21a18 18 0 01-36 0C14 33 24 25 28 15c1.5-4 3-8 4-12z" fill="url(#flg)"></path>
+<path d="M32 30c1 5-5 7-5 13a5 5 0 0010 0c0-4-3-6-5-13z" fill="#FFE08A"></path>
+</svg>
+</div>
+</button>
+<div style="flex: 1; min-width: 0">
+<div style="display: flex; align-items: baseline; gap: 8px">
+<span style="font-weight: 800; font-size: 36px; line-height: 1; animation: {{streakNumAnim}}">{{streakNow}}</span>
+<span style="font-weight: 800; font-size: {{f.body}}">{{L.streak}}</span>
+</div>
+<div style="font-size: {{f.small}}; color: {{c.sub}}; margin-top: 4px">{{streakText}}</div>
+</div>
+</div>
+<div style="display: flex; justify-content: space-between">
+<sc-for list="{{ weekDots }}" as="w" hint-placeholder-count="7">
+<span style="width: 34px; height: 34px; border-radius: 50%; box-sizing: border-box; background: {{w.bg}}; border: 2px solid {{w.border}}; display: flex; align-items: center; justify-content: center">
+<sc-if value="{{ w.lit }}" hint-placeholder-val="{{ false }}"><svg style="animation: pop .4s ease both" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if>
+</span>
+</sc-for>
+</div>
+</div>
+
+<div style="background: {{c.card}}; border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+<div style="font-weight: 800; font-size: {{f.h2}}">{{L.challenge}}</div>
+<div style="font-size: {{f.small}}; color: {{c.sub}}">{{doneText}}</div>
+<div style="height: 12px; border-radius: 999px; background: {{c.accentSoft}}; overflow: hidden"><div style="height: 100%; width: {{progress}}; background: {{c.accent}}; border-radius: 999px; transition: width .6s cubic-bezier(.2,.8,.2,1)"></div></div>
+</div>
+<sc-for list="{{ tasks }}" as="t" hint-placeholder-count="5">
+<button onClick="{{ t.tap }}" style="display: flex; align-items: center; gap: 14px; text-align: start; background: {{c.card}}; color: {{c.text}}; border: 2px solid {{t.border}}; border-radius: 20px; padding: 16px; min-height: 64px; animation: {{t.anim}}">
+<span style="width: 32px; height: 32px; flex: none; border-radius: 50%; border: 2px solid {{c.accent}}; background: {{t.fill}}; transition: background .25s ease; display: flex; align-items: center; justify-content: center">
+<sc-if value="{{ t.done }}" hint-placeholder-val="{{ false }}"><svg style="animation: pop .4s ease both" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if>
+</span>
+<span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+<span style="font-weight: 800; font-size: {{f.body}}">{{t.title}}</span>
+<span style="font-size: {{f.small}}; color: {{c.sub}}">{{t.cat}}</span>
+</span>
+<span style="font-weight: 800; font-size: {{f.small}}; color: {{c.accentText}}; background: {{c.accentSoft}}; padding: 6px 12px; border-radius: 999px">+{{t.pts}}</span>
+</button>
+</sc-for>
+<button onClick="{{ nextDay }}" style="align-self: center; background: transparent; border: 2px dashed {{c.sub}}; color: {{c.sub}}; border-radius: 999px; padding: 10px 18px; font-weight: 700; font-size: {{f.small}}; min-height: 44px">{{L.preview}}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isShop }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px; animation: {{tabAnim}}">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<h1 style="margin: 0; font-size: {{f.h1}}; font-weight: 800">{{L.medals}}</h1>
+<div style="background: {{c.accentSoft}}; color: {{c.accentText}}; padding: 10px 16px; border-radius: 999px; font-weight: 800; font-size: {{f.body}}; animation: {{bump}}">{{points}} {{L.pts}}</div>
+</div>
+<div style="display: flex; gap: 6px; background: {{c.card}}; border-radius: 999px; padding: 5px">
+<button onClick="{{ goMedals }}" style="flex: 1; min-height: 44px; border: 0; border-radius: 999px; font-weight: 800; font-size: {{f.small}}; background: {{segMBg}}; color: {{segMFg}}">{{L.medals}}</button>
+<button onClick="{{ goFrames }}" style="flex: 1; min-height: 44px; border: 0; border-radius: 999px; font-weight: 800; font-size: {{f.small}}; background: {{segFBg}}; color: {{segFFg}}">{{L.frames}}</button>
+</div>
+<sc-if value="{{ shopMedals }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 16px; animation: rise .35s ease both">
+<div style="background: {{c.card}}; border-radius: 20px; padding: 14px 16px; font-weight: 700; font-size: {{f.small}}; color: {{c.sub}}">{{nextText}}</div>
+<sc-for list="{{ medals }}" as="m" hint-placeholder-count="10">
+<div style="display: flex; align-items: center; gap: 14px; background: {{c.card}}; border-radius: 22px; padding: 14px 16px">
+<div style="width: 64px; flex: none; animation: {{m.anim}}">
+<svg width="64" height="80" viewBox="0 0 80 100" style="filter: {{m.filter}}; opacity: {{m.op}}; display: block" aria-hidden="true">
+<defs>
+<linearGradient id="rim{{m.i}}" x1="0.1" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="{{m.hi}}"></stop><stop offset="0.45" stop-color="{{m.mid}}"></stop><stop offset="1" stop-color="{{m.lo}}"></stop></linearGradient>
+<radialGradient id="face{{m.i}}" cx="0.35" cy="0.3" r="0.9"><stop offset="0" stop-color="{{m.hi}}"></stop><stop offset="0.6" stop-color="{{m.mid}}"></stop><stop offset="1" stop-color="{{m.lo}}"></stop></radialGradient>
+</defs>
+<polygon points="24,0 41,0 47,40 31,46" fill="{{m.rib}}"></polygon>
+<polygon points="56,0 39,0 33,40 49,46" fill="{{m.ribDark}}"></polygon>
+<ellipse cx="40" cy="93" rx="22" ry="4" fill="#000" opacity="0.18"></ellipse>
+<circle cx="40" cy="62" r="31" fill="url(#rim{{m.i}})"></circle>
+<circle cx="40" cy="62" r="26" fill="{{m.lo}}"></circle>
+<circle cx="40" cy="62" r="24.5" fill="url(#face{{m.i}})"></circle>
+<circle cx="40" cy="62" r="20" fill="none" stroke="{{m.lo}}" stroke-opacity="0.45" stroke-width="1"></circle>
+<g transform="translate(40.8,62.8) scale(1.1) translate(-12,-12)"><path d="{{m.icon}}" fill="#000" fill-opacity="0.35"></path></g>
+<g transform="translate(40,62) scale(1.1) translate(-12,-12)"><path d="{{m.icon}}" fill="{{m.emb}}" stroke="{{m.lo}}" stroke-opacity="0.6" stroke-width="0.6"></path></g>
+<path d="M17 52a26 26 0 0125-17c-12 2-20 9-25 17z" fill="#fff" opacity="0.4"></path>
+<circle cx="40" cy="62" r="30.5" fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="1"></circle>
+</svg>
+</div>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+<span style="font-weight: 800; font-size: {{f.body}}">{{m.name}}</span>
+<span style="font-size: {{f.small}}; color: {{c.sub}}">{{m.motto}}</span>
+<span style="font-size: {{f.small}}; font-weight: 800; color: {{c.accentText}}">{{m.cost}} {{L.pts}}</span>
+</div>
+<button onClick="{{ m.buy }}" disabled="{{ m.off }}" style="flex: none; border: 0; border-radius: 999px; padding: 10px 14px; min-height: 44px; font-weight: 800; font-size: {{f.small}}; background: {{m.btnBg}}; color: {{m.btnFg}}">{{m.label}}</button>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ shopFrames }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{ filters }}" as="fl" hint-placeholder-count="3">
+<button onClick="{{ fl.pick }}" style="border: 0; border-radius: 999px; padding: 0 16px; min-height: 44px; font-weight: 800; font-size: {{f.small}}; background: {{fl.bg}}; color: {{fl.fg}}">{{fl.label}}</button>
+</sc-for>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; animation: rise .35s ease both">
+<sc-for list="{{ decos }}" as="d" hint-placeholder-count="8">
+<div style="background: {{c.card}}; border-radius: 22px; padding: 18px 10px 14px; display: flex; flex-direction: column; align-items: center; gap: 8px">
+<div style="position: relative; width: 64px; height: 64px; margin: 12px 0 10px">
+<div style="width: 100%; height: 100%; border-radius: 50%; background: {{d.avBg}}; color: #fff; font-weight: 800; font-size: 24px; display: flex; align-items: center; justify-content: center; overflow: hidden">{{d.ini}}</div>
+<svg width="90" height="90" viewBox="0 0 120 120" style="position: absolute; left: -13px; top: -13px; pointer-events: none; filter: {{d.glow}}" aria-hidden="true">
+<defs><linearGradient id="dgT{{d.i}}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="{{d.ga}}"></stop><stop offset="0.5" stop-color="{{d.gb}}"></stop><stop offset="1" stop-color="{{d.gc}}"></stop></linearGradient></defs>
+<g style="transform-origin: 60px 60px; transform-box: view-box; animation: {{d.anim}}">
+<sc-for list="{{ d.shapes }}" as="q" hint-placeholder-count="2">
+<path d="{{q.d}}" fill="{{q.fill}}" stroke="{{q.stroke}}" stroke-width="{{q.sw}}" stroke-dasharray="{{q.dash}}" stroke-linecap="round" opacity="{{q.op}}" style="transform-origin: {{q.origin}}; transform-box: view-box; animation: {{q.anim}}"></path>
+</sc-for>
+</g>
+</svg>
+</div>
+<span style="font-weight: 800; font-size: {{f.body}}; text-align: center">{{d.name}}</span>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; min-height: 8px">
+<sc-for list="{{ d.swatches }}" as="w2" hint-placeholder-count="4">
+<button onClick="{{ w2.pick }}" aria-label="{{ w2.label }}" style="width: 36px; height: 36px; padding: 0; border: 0; background: transparent; display: flex; align-items: center; justify-content: center"><span style="width: 26px; height: 26px; box-sizing: border-box; border-radius: 50%; background: {{w2.color}}; border: 3px solid {{w2.ring}}; color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center">{{w2.mark}}</span></button>
+</sc-for>
+</div>
+<span style="font-size: {{f.small}}; font-weight: 800; color: {{c.accentText}}">{{d.costText}}</span>
+<button onClick="{{ d.act }}" disabled="{{ d.off }}" style="border: 0; border-radius: 999px; padding: 0 16px; min-height: 44px; font-weight: 800; font-size: {{f.small}}; background: {{d.btnBg}}; color: {{d.btnFg}}">{{d.label}}</button>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isMe }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px; animation: {{tabAnim}}">
+<div style="background: {{c.card}}; border-radius: 24px; overflow: hidden">
+<div style="height: 128px; background: {{bannerBg}}; position: relative">
+<label class="up" style="position: absolute; top: 10px; inset-inline-end: 10px; background: rgba(0,0,0,0.6); color: #fff; border-radius: 999px; padding: 0 14px; height: 40px; box-sizing: border-box; font-weight: 800; font-size: {{f.small}}; display: flex; align-items: center; cursor: pointer; overflow: hidden">{{L.banner}}<input type="file" accept="image/*" onChange="{{onBanner}}" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer"></label>
+</div>
+<div style="padding: 0 18px 18px; margin-top: -46px; position: relative; z-index: 1; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+<div style="position: relative; width: 92px; height: 92px; flex: none">
+<div style="width: 100%; height: 100%; border-radius: 50%; border: 4px solid {{c.card}}; box-sizing: border-box; background: {{c.accent}}; overflow: hidden; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 34px">
+<sc-if value="{{ hasPic }}" hint-placeholder-val="{{ false }}"><img src="{{pic}}" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block"></sc-if>
+<sc-if value="{{ noPic }}" hint-placeholder-val="{{ true }}"><span>{{initial}}</span></sc-if>
+</div>
+<svg width="128" height="128" viewBox="0 0 120 120" style="position: absolute; left: -18px; top: -18px; pointer-events: none; filter: {{decoGlow}}" aria-hidden="true">
+<defs><linearGradient id="dgA0" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="{{decoA}}"></stop><stop offset="0.5" stop-color="{{decoB}}"></stop><stop offset="1" stop-color="{{decoC}}"></stop></linearGradient></defs>
+<g style="transform-origin: 60px 60px; transform-box: view-box; animation: {{decoAnim}}">
+<sc-for list="{{ decoShapes }}" as="sh" hint-placeholder-count="2">
+<path d="{{sh.d}}" fill="{{sh.fill}}" stroke="{{sh.stroke}}" stroke-width="{{sh.sw}}" stroke-dasharray="{{sh.dash}}" stroke-linecap="round" opacity="{{sh.op}}" style="transform-origin: {{sh.origin}}; transform-box: view-box; animation: {{sh.anim}}"></path>
+</sc-for>
+</g>
+</svg>
+</div>
+<label class="up" style="position: relative; background: {{c.accentSoft}}; color: {{c.accentText}}; border-radius: 999px; padding: 0 16px; height: 44px; box-sizing: border-box; font-weight: 800; font-size: {{f.small}}; display: flex; align-items: center; cursor: pointer; overflow: hidden; margin-bottom: 4px">{{L.photo}}<input type="file" accept="image/*" onChange="{{onPic}}" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer"></label>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 34px">
+<span style="font-weight: 800; font-size: {{f.h2}}">{{displayName}}</span>
+<sc-for list="{{ myBadges }}" as="b" hint-placeholder-count="3">
+<span role="img" aria-label="{{b.label}}" title="{{b.label}}" style="display: flex; animation: {{b.anim}}">
+<svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true" style="display: block">
+<defs><linearGradient id="bm{{b.i}}" x1="0.1" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="{{b.hi}}"></stop><stop offset="0.5" stop-color="{{b.mid}}"></stop><stop offset="1" stop-color="{{b.lo}}"></stop></linearGradient><radialGradient id="bmf{{b.i}}" cx="0.35" cy="0.3" r="0.9"><stop offset="0" stop-color="{{b.hi}}"></stop><stop offset="0.6" stop-color="{{b.mid}}"></stop><stop offset="1" stop-color="{{b.lo}}"></stop></radialGradient></defs>
+<polygon points="32,2 58,17 58,47 32,62 6,47 6,17" fill="url(#bm{{b.i}})"></polygon>
+<polygon points="32,7.5 53,19.5 53,44.5 32,56.5 11,44.5 11,19.5" fill="{{b.lo}}"></polygon>
+<polygon points="32,9 51.5,20.3 51.5,43.7 32,55 12.5,43.7 12.5,20.3" fill="url(#bmf{{b.i}})"></polygon>
+<g transform="translate(32.7,32.7) scale(1.05) translate(-12,-12)"><path d="{{b.icon}}" fill="#000" fill-opacity="0.35"></path></g>
+<g transform="translate(32,32) scale(1.05) translate(-12,-12)"><path d="{{b.icon}}" fill="{{b.emb}}" stroke="{{b.lo}}" stroke-opacity="0.6" stroke-width="0.6"></path></g>
+<path d="M12.5 28L32 9l19.5 11.3-6 .2C36 20 22 22 12.5 28z" fill="#fff" opacity="0.35"></path>
+<polygon points="32,2 58,17 58,47 32,62 6,47 6,17" fill="none" stroke="#fff" stroke-opacity="0.4" stroke-width="1"></polygon>
+</svg>
+</span>
+</sc-for>
+<sc-if value="{{ noBadges }}" hint-placeholder-val="{{ false }}"><span style="font-size: {{f.small}}; color: {{c.sub}}">{{L.noBadges}}</span></sc-if>
+</div>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: {{f.small}}; font-weight: 700; color: {{c.sub}}">{{L.name}}
+<input type="text" value="{{name}}" onChange="{{onName}}" maxlength="24" placeholder="{{L.namePh}}" style="height: 48px; box-sizing: border-box; border-radius: 14px; border: 2px solid {{c.accentSoft}}; background: {{c.bg}}; color: {{c.text}}; padding: 0 14px; font-size: {{f.body}}; font-weight: 800; outline-color: {{c.accent}}">
+</label>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; justify-content: space-between; font-size: {{f.small}}; font-weight: 800"><span>{{L.level}} {{level}}</span><span style="color: {{c.sub}}">{{levelInto}}/100</span></div>
+<div style="height: 10px; border-radius: 999px; background: {{c.accentSoft}}; overflow: hidden"><div style="height: 100%; width: {{levelInto}}%; background: {{c.accent}}; border-radius: 999px; transition: width .6s ease"></div></div>
+</div>
+</div>
+</div>
+<div style="display: flex; gap: 10px">
+<div style="flex: 1; background: {{c.card}}; border-radius: 20px; padding: 14px; text-align: center"><div style="font-weight: 800; font-size: {{f.h2}}">{{total}}</div><div style="font-size: {{f.small}}; color: {{c.sub}}">{{L.tasksDone}}</div></div>
+<div style="flex: 1; background: {{c.card}}; border-radius: 20px; padding: 14px; text-align: center"><div style="font-weight: 800; font-size: {{f.h2}}">{{ownedCount}}</div><div style="font-size: {{f.small}}; color: {{c.sub}}">{{L.medalsLbl}}</div></div>
+<div style="flex: 1; background: {{c.card}}; border-radius: 20px; padding: 14px; text-align: center"><div style="font-weight: 800; font-size: {{f.h2}}">{{bestStreak}}</div><div style="font-size: {{f.small}}; color: {{c.sub}}">{{L.bestStreak}}</div></div>
+</div>
+<div style="font-weight: 800; font-size: {{f.h2}}">{{L.makeYours}}</div>
+<div style="background: {{c.card}}; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+<div style="font-size: {{f.small}}; color: {{c.sub}}; font-weight: 700">{{L.language}}</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{ langs }}" as="g" hint-placeholder-count="4">
+<button onClick="{{ g.pick }}" style="border: 0; border-radius: 999px; padding: 10px 16px; min-height: 44px; font-weight: 800; font-size: {{f.small}}; background: {{g.bg}}; color: {{g.fg}}">{{g.name}}</button>
+</sc-for>
+</div>
+<div style="font-size: {{f.small}}; color: {{c.sub}}; font-weight: 700">{{L.accent}}</div>
+<div style="display: flex; gap: 14px">
+<sc-for list="{{ accents }}" as="x" hint-placeholder-count="4">
+<button onClick="{{ x.pick }}" aria-label="{{ x.name }}" style="width: 44px; height: 44px; border-radius: 50%; background: {{x.color}}; border: 4px solid {{x.ring}}; padding: 0"></button>
+</sc-for>
+</div>
+<button onClick="{{ toggleDark }}" style="display: flex; justify-content: space-between; align-items: center; background: transparent; border: 0; padding: 4px 0; min-height: 44px; color: {{c.text}}; font-weight: 700; font-size: {{f.body}}"><span>{{L.dark}}</span><span style="font-weight: 800; color: {{c.accentText}}">{{darkLabel}}</span></button>
+<button onClick="{{ toggleBig }}" style="display: flex; justify-content: space-between; align-items: center; background: transparent; border: 0; padding: 4px 0; min-height: 44px; color: {{c.text}}; font-weight: 700; font-size: {{f.body}}"><span>{{L.large}}</span><span style="font-weight: 800; color: {{c.accentText}}">{{bigLabel}}</span></button>
+<button onClick="{{ toggleTrans }}" style="display: flex; justify-content: space-between; align-items: center; background: transparent; border: 0; padding: 4px 0; min-height: 44px; color: {{c.text}}; font-weight: 700; font-size: {{f.body}}"><span>{{L.trans}}</span><span style="font-weight: 800; color: {{c.accentText}}">{{transLabel}}</span></button>
+<button onClick="{{ toggleSound }}" style="display: flex; justify-content: space-between; align-items: center; background: transparent; border: 0; padding: 4px 0; min-height: 44px; color: {{c.text}}; font-weight: 700; font-size: {{f.body}}"><span>{{L.sound}}</span><span style="font-weight: 800; color: {{c.accentText}}">{{soundLabel}}</span></button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAch }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px; animation: {{tabAnim}}">
+<h1 style="margin: 0; font-size: {{f.h1}}; font-weight: 800">{{L.awards}}</h1>
+<div style="font-weight: 800; font-size: {{f.h2}}">{{L.badges}}</div>
+<sc-for list="{{ fams }}" as="b" hint-placeholder-count="8">
+<div style="display: flex; align-items: center; gap: 14px; background: {{c.card}}; border-radius: 20px; padding: 14px 16px">
+<span style="flex: none; display: flex; filter: {{b.filter}}; opacity: {{b.op}}; animation: {{b.anim}}">
+<svg width="56" height="56" viewBox="0 0 64 64" aria-hidden="true" style="display: block">
+<defs><linearGradient id="ba{{b.i}}" x1="0.1" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="{{b.hi}}"></stop><stop offset="0.5" stop-color="{{b.mid}}"></stop><stop offset="1" stop-color="{{b.lo}}"></stop></linearGradient><radialGradient id="baf{{b.i}}" cx="0.35" cy="0.3" r="0.9"><stop offset="0" stop-color="{{b.hi}}"></stop><stop offset="0.6" stop-color="{{b.mid}}"></stop><stop offset="1" stop-color="{{b.lo}}"></stop></radialGradient></defs>
+<polygon points="32,2 58,17 58,47 32,62 6,47 6,17" fill="url(#ba{{b.i}})"></polygon>
+<polygon points="32,7.5 53,19.5 53,44.5 32,56.5 11,44.5 11,19.5" fill="{{b.lo}}"></polygon>
+<polygon points="32,9 51.5,20.3 51.5,43.7 32,55 12.5,43.7 12.5,20.3" fill="url(#baf{{b.i}})"></polygon>
+<g transform="translate(32.7,32.7) scale(1.05) translate(-12,-12)"><path d="{{b.icon}}" fill="#000" fill-opacity="0.35"></path></g>
+<g transform="translate(32,32) scale(1.05) translate(-12,-12)"><path d="{{b.icon}}" fill="{{b.emb}}" stroke="{{b.lo}}" stroke-opacity="0.6" stroke-width="0.6"></path></g>
+<path d="M12.5 28L32 9l19.5 11.3-6 .2C36 20 22 22 12.5 28z" fill="#fff" opacity="0.35"></path>
+<polygon points="32,2 58,17 58,47 32,62 6,47 6,17" fill="none" stroke="#fff" stroke-opacity="0.4" stroke-width="1"></polygon>
+</svg>
+</span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+<span style="font-weight: 800; font-size: {{f.body}}">{{b.name}}</span>
+<span style="font-size: {{f.small}}; color: {{c.sub}}">{{b.desc}}</span>
+<span style="height: 8px; border-radius: 999px; background: {{c.accentSoft}}; overflow: hidden; margin-top: 4px; display: block"><span style="display: block; height: 100%; width: {{b.progW}}; background: {{c.accent}}; border-radius: 999px; transition: width .6s ease"></span></span>
+</span>
+<span style="flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: {{f.small}}; font-weight: 800"><span style="color: {{c.accentText}}">{{b.tierLabel}}</span><span style="color: {{c.sub}}">{{b.prog}}</span></span>
+</div>
+</sc-for>
+<div style="font-weight: 800; font-size: {{f.h2}}">{{L.achievements}}</div>
+<sc-for list="{{ achievements }}" as="a" hint-placeholder-count="7">
+<div style="display: flex; align-items: center; gap: 12px; background: {{c.card}}; border-radius: 18px; padding: 12px 16px; opacity: {{a.op}}">
+<span style="width: 14px; height: 14px; flex: none; border-radius: 50%; background: {{a.dot}}"></span>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-weight: 800; font-size: {{f.body}}">{{a.title}}</span><span style="font-size: {{f.small}}; color: {{c.sub}}">{{a.desc}}</span></span>
+<span style="font-size: {{f.small}}; font-weight: 800; color: {{c.sub}}">{{a.tag}}</span>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+</div>
+<sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; top: 14px; left: 0; right: 0; display: flex; justify-content: center; pointer-events: none">
+<div style="background: #E8561C; color: #fff; font-weight: 800; font-size: {{f.small}}; padding: 12px 20px; border-radius: 999px; animation: toastIn 2.4s ease both">{{toastText}}</div>
+</div>
+</sc-if>
+<sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; flex-direction: column; justify-content: flex-end">
+<button onClick="{{ closeSched }}" aria-label="{{ L.close }}" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); border: 0; padding: 0; animation: fadeIn .25s ease both"></button>
+<div style="position: relative; background: {{c.card}}; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 14px; animation: sheetUp .35s cubic-bezier(.2,.8,.2,1) both">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<div style="font-weight: 800; font-size: {{f.h2}}">{{L.schedule}}</div>
+<button onClick="{{ closeSched }}" aria-label="{{ L.close }}" style="width: 44px; height: 44px; border: 0; border-radius: 50%; background: {{c.accentSoft}}; color: {{c.accentText}}; font-size: 20px; font-weight: 800">×</button>
+</div>
+<div style="display: flex; gap: 10px">
+<div style="flex: 1; background: {{c.bg}}; border-radius: 16px; padding: 10px; text-align: center"><div style="font-weight: 800; font-size: {{f.h2}}; color: #E8561C">{{streakNow}}</div><div style="font-size: {{f.small}}; color: {{c.sub}}">{{L.streak}}</div></div>
+<div style="flex: 1; background: {{c.bg}}; border-radius: 16px; padding: 10px; text-align: center"><div style="font-weight: 800; font-size: {{f.h2}}">{{bestStreak}}</div><div style="font-size: {{f.small}}; color: {{c.sub}}">{{L.bestStreak}}</div></div>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between">
+<button onClick="{{ prevMonth }}" aria-label="{{ L.prevM }}" style="width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; color: {{c.text}}; font-size: 24px; font-weight: 800">{{arrowPrev}}</button>
+<div style="font-weight: 800; font-size: {{f.body}}">{{monthLabel}}</div>
+<button onClick="{{ nextMonth }}" aria-label="{{ L.nextM }}" style="width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; color: {{c.text}}; font-size: 24px; font-weight: 800">{{arrowNext}}</button>
+</div>
+<div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{ weekdays }}" as="wd" hint-placeholder-count="7">
+<div style="text-align: center; font-size: {{f.small}}; font-weight: 700; color: {{c.sub}}">{{wd.label}}</div>
+</sc-for>
+<sc-for list="{{ cells }}" as="ce" hint-placeholder-count="35">
+<div style="height: 40px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 14px; background: {{ce.bg}}; color: {{ce.fg}}; border: 2px solid {{ce.border}}; font-weight: 800; font-size: {{f.small}}">{{ce.label}}</div>
+</sc-for>
+</div>
+<div style="font-size: {{f.small}}; color: {{c.sub}}">{{L.schedSub}}</div>
+</div>
+</div>
+</sc-if>
+<div style="display: flex; gap: 8px; padding: 10px 16px 18px; background: {{c.card}}">
+<sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="3">
+<button onClick="{{ tb.go }}" style="flex: 1; min-height: 48px; border: 0; border-radius: 16px; font-weight: 800; font-size: {{f.small}}; background: {{tb.bg}}; color: {{tb.fg}}">{{tb.label}}</button>
+</sc-for>
+</div>
+</div>
+</template>
+<script>(function(){
+class DCLogic{constructor(p){this.props=p||{};this.state={};}
+ setState(p,cb){const n=typeof p==='function'?p(this.state):p;Object.assign(this.state,n);if(this.__render)this.__render();if(cb)cb();}
+ forceUpdate(){if(this.__render)this.__render();}}
+window.DCLogic=DCLogic;
+const HOLE=/\{\{([^}]+)\}\}/g,WHOLE=/^\s*\{\{([^}]+)\}\}\s*$/;
+function lookup(path,scope){path=path.trim();
+ if(path==='true')return true;if(path==='false')return false;if(path==='null')return null;
+ if(/^-?\d+(\.\d+)?$/.test(path))return parseFloat(path);
+ const parts=path.split('.');let v=scope[parts[0]];for(let i=1;i<parts.length&&v!=null;i++)v=v[parts[i]];return v;}
+const str=(t,scope)=>t.replace(HOLE,(_,p)=>{const v=lookup(p,scope);return v==null?'':String(v);});
+function evalAttr(val,scope){const m=WHOLE.exec(val);return m?lookup(m[1],scope):str(val,scope);}
+let sck=0;
+function prep(root){const w=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT);let n;while((n=w.nextNode())){if(n.localName==='sc-if')n.__id=++sck;}}
+function build(node,scope,parent,key){
+ if(node.nodeType===3){const t=node.nodeValue;if(!t.trim())return;parent.appendChild(document.createTextNode(str(t,scope)));return;}
+ if(node.nodeType!==1)return;
+ const tag=node.localName;
+ if(tag==='sc-if'){if(evalAttr(node.getAttribute('value'),scope)){node.childNodes.forEach(ch=>build(ch,scope,parent,'k'+node.__id));}return;}
+ if(tag==='sc-for'){const list=evalAttr(node.getAttribute('list'),scope)||[],as=node.getAttribute('as');
+  list.forEach((it,i)=>{const sc=Object.assign({},scope,{[as]:it,$index:i});node.childNodes.forEach(ch=>build(ch,sc,parent,key));});return;}
+ const el=document.createElementNS(node.namespaceURI,node.localName);
+ if(key)el.setAttribute('data-sck',key);
+ for(const a of Array.from(node.attributes)){const nm=a.name,val=a.value;
+  if(nm.indexOf('hint-')===0)continue;
+  if(!/\{\{/.test(val)){el.setAttribute(nm,val);continue;}
+  const w=WHOLE.exec(val);
+  if(w&&/^on[a-z]+$/.test(nm)){let ev=nm.slice(2);if(ev==='change'&&el.localName==='input'&&(node.getAttribute('type')||'text')==='text')ev='input';(el.__h=el.__h||{})[ev]=lookup(w[1],scope);continue;}
+  if(w){const raw=lookup(w[1],scope);
+   if(nm==='value'&&el.localName==='input'){el.__val=raw==null?'':String(raw);continue;}
+   if(raw===false||raw==null)continue;
+   el.setAttribute(nm,raw===true?'':String(raw));continue;}
+  el.setAttribute(nm,str(val,scope));}
+ node.childNodes.forEach(ch=>build(ch,scope,el,undefined));
+ if(el.__val!==undefined)el.value=el.__val;
+ parent.appendChild(el);
+}
+const same=(o,n)=>o.nodeType===n.nodeType&&(o.nodeType!==1||(o.localName===n.localName&&o.namespaceURI===n.namespaceURI));
+const keyOf=x=>x.nodeType===1?x.getAttribute('data-sck'):null;
+function morph(op,np){
+ const oc=Array.from(op.childNodes),nc=Array.from(np.childNodes),used=new Set(),res=[];
+ nc.forEach(n=>{let m=null;const k=keyOf(n);
+  if(k)m=oc.find(o=>!used.has(o)&&same(o,n)&&keyOf(o)===k);
+  else m=oc.find(o=>!used.has(o)&&same(o,n)&&!keyOf(o));
+  if(m){patch(m,n);used.add(m);res.push(m);}else res.push(n);});
+ res.forEach((r,i)=>{const cur=op.childNodes[i];if(cur!==r)op.insertBefore(r,cur||null);});
+ while(op.childNodes.length>res.length)op.removeChild(op.lastChild);
+}
+function patch(o,n){
+ if(o.nodeType===3){if(o.nodeValue!==n.nodeValue)o.nodeValue=n.nodeValue;return;}
+ if(o.nodeType!==1)return;
+ for(const a of Array.from(n.attributes)){if(o.getAttribute(a.name)!==a.value)o.setAttribute(a.name,a.value);}
+ for(const a of Array.from(o.attributes)){if(!n.hasAttribute(a.name))o.removeAttribute(a.name);}
+ o.__h=n.__h;
+ if(n.__val!==undefined&&(o!==document.activeElement||o.value!==n.__val))o.value=n.__val;
+ morph(o,n);
+}
+function ensure(root){root.querySelectorAll('*').forEach(e=>{if(!e.__h)return;e.__l=e.__l||{};for(const ev in e.__h){if(!e.__l[ev]){e.__l[ev]=1;e.addEventListener(ev,x=>{const f=e.__h&&e.__h[ev];if(f)f(x);});}}});}
+window.__mount=function(comp,app,tpl,onRender){
+ prep(tpl);
+ function render(){
+  const vals=comp.renderVals(),tmp=document.createElement('div');
+  tpl.childNodes.forEach(ch=>build(ch,vals,tmp,undefined));
+  morph(app,tmp);ensure(app);
+  document.body.style.background=vals.c.bg;document.documentElement.style.background=vals.c.bg;
+  if(onRender)onRender(vals);
+ }
+ comp.__render=render;render();
+};
+})();</script>
+<script>
+const TASKS = [
+ ['hyd',20,['Drink 8 glasses of water','اشرب 8 أكواب ماء',"Buvez 8 verres d'eau",'Bebe 8 vasos de agua']],
+ ['mov',30,['Walk 6,000 steps','امشِ 6000 خطوة','Marchez 6 000 pas','Camina 6.000 pasos']],
+ ['flex',15,['Stretch for 10 minutes','تمدد لمدة 10 دقائق','Étirez-vous 10 minutes','Estira 10 minutos']],
+ ['sleep',25,['Go to bed before 11 pm','نم قبل الساعة 11 مساءً','Couchez-vous avant 23 h','Acuéstate antes de las 23:00']],
+ ['nut',10,['Eat one piece of fruit','تناول حبة فاكهة','Mangez un fruit','Come una fruta']],
+ ['nut',20,['Skip sugary drinks today','تجنب المشروبات السكرية اليوم','Évitez les boissons sucrées','Evita las bebidas azucaradas']],
+ ['mind',15,['Breathe deeply for 5 minutes','تنفس بعمق لمدة 5 دقائق','Respirez profondément 5 minutes','Respira hondo 5 minutos']],
+ ['str',25,['Do 15 push-ups','أدِّ 15 تمرين ضغط','Faites 15 pompes','Haz 15 flexiones']],
+ ['mov',10,['Take the stairs','استخدم الدرج','Prenez les escaliers','Usa las escaleras']],
+ ['rest',15,['Take a 20-minute screen break','خذ استراحة 20 دقيقة من الشاشة',"Faites une pause d'écran de 20 minutes",'Descansa 20 minutos de la pantalla']],
+ ['nut',20,['Add a vegetable to every meal','أضف خضارًا لكل وجبة','Ajoutez un légume à chaque repas','Añade una verdura a cada comida']],
+ ['mind',15,['Spend 15 minutes in sunlight','اقضِ 15 دقيقة في الشمس','Passez 15 minutes au soleil','Pasa 15 minutos al sol']],
+ ['str',30,['Do a 7-minute workout','مارس تمرين 7 دقائق','Faites un entraînement de 7 minutes','Haz un entrenamiento de 7 minutos']],
+ ['mind',10,['Write down one thing you are grateful for','اكتب شيئًا واحدًا تشكر عليه','Notez une chose dont vous êtes reconnaissant','Escribe algo por lo que estés agradecido']],
+ ['mov',15,['Stand up every hour','قف كل ساعة','Levez-vous chaque heure','Levántate cada hora']]
+];
+const ICON = {
+ user:'M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM3.5 21a8.5 8.5 0 0117 0z',
+ bubble:'M4 4h16v12H9l-5 5z',
+ leaf:'M20 4C10 4 4 9 4 15c0 2 1 4 3 5 0-5 3-8 8-10-4 3-6 6-6 10 8 0 11-7 11-16z',
+ star:'M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6L2.5 9.4l6.6-.8z',
+ bolt:'M13 2L4.5 13.5H11L10 22l8.5-11.5H12.5z',
+ drop:'M12 2.5C12 2.5 5 10 5 15a7 7 0 0014 0c0-5-7-12.5-7-12.5z',
+ heart:'M12 21s-8-5.2-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 10c0 5.8-8 11-8 11z',
+ flame:'M12 2s6 4.5 6 11a6 6 0 01-12 0c0-2.5 1-4 2.5-5.5.2 1.8 1 3 2.2 3C10.5 7.5 11 5 12 2z',
+ moon:'M20 14.5A8.5 8.5 0 019.5 4 8.5 8.5 0 1020 14.5z',
+ mountain:'M2 20L9 7l4 6 3-4 6 11z',
+ crown:'M3 18l-1-11 5.5 4L12 4l4.5 7L22 7l-1 11z',
+ gem:'M6 3h12l4 6-10 12L2 9z'
+};
+// cost, icon, [hi, mid, lo], emblem, ribbon, ribbonDark
+const MEDALS = [
+ [40,'leaf',['#B6F2C8','#38B36B','#15693A'],'#E9FFF0','#2E9E5B','#1E7C45'],
+ [90,'star',['#F6C7A0','#C9783A','#7A3F16'],'#FFE7CF','#B5472F','#8F3321'],
+ [150,'bolt',['#FFFFFF','#BFC7D1','#6B7380'],'#F5F8FC','#3E5C8A','#2D4568'],
+ [220,'drop',['#B9E4FF','#3F9BE6','#1B528F'],'#E6F5FF','#1F77C9','#165A9C'],
+ [300,'heart',['#FFF2B0','#F2BE2B','#9A6A07'],'#FFF9DB','#D63A4A','#A82B38'],
+ [400,'flame',['#FFC2B3','#E4472F','#80190E'],'#FFE9E2','#E4472F','#B5301D'],
+ [520,'moon',['#E3CCFF','#8F5FD6','#472283'],'#F4EAFF','#6C3FB5','#512C8E'],
+ [680,'mountain',['#FFFFFF','#DDE4EA','#8E9BA8'],'#FFFFFF','#2B3A4A','#1D2935'],
+ [880,'crown',['#FFE3EA','#E48AA2','#8E3550'],'#FFF1F5','#B84A68','#8F3650'],
+ [1200,'gem',['#D9F7FF','#4FC9E8','#1A6C88'],'#F2FDFF','#10243A','#0A1726']
+];
+function circ(r){return 'M '+(60-r)+' 60 a '+r+' '+r+' 0 1 0 '+(2*r)+' 0 a '+r+' '+r+' 0 1 0 '+(-2*r)+' 0';}
+function leaf(cx,cy,a,len,wid){const t=[Math.cos(a),Math.sin(a)],n=[-t[1],t[0]],x1=cx-t[0]*len/2,y1=cy-t[1]*len/2,x2=cx+t[0]*len/2,y2=cy+t[1]*len/2;
+ return 'M'+x1.toFixed(1)+' '+y1.toFixed(1)+' Q'+(cx+n[0]*wid).toFixed(1)+' '+(cy+n[1]*wid).toFixed(1)+' '+x2.toFixed(1)+' '+y2.toFixed(1)+' Q'+(cx-n[0]*wid).toFixed(1)+' '+(cy-n[1]*wid).toFixed(1)+' '+x1.toFixed(1)+' '+y1.toFixed(1)+'Z';}
+function laurel(){const o=[];for(let k=0;k<8;k++){const deg=95+k*18.5;[1,-1].forEach(sd=>{const ad=sd>0?deg:180-deg,r=ad*Math.PI/180,cx=60+49*Math.cos(r),cy=60+49*Math.sin(r),tan=r+(sd>0?1:-1)*(Math.PI/2+0.45);
+ o.push({d:leaf(cx,cy,tan,15,4.6),fill:'G',s:'none',sw:0});});}return o;}
+const GOLD=['#FFF1A8','#F5B82E','#B97A0A'];
+const sh=(d,fill,s,sw,dash,op,an,ox,oy)=>({d,fill,s,sw,dash,op,an,ox,oy});
+const A=(name,dur,delay,timing)=>name+' '+dur+'s '+(timing||'linear')+' '+(delay||0)+'s infinite';
+function heart(cx,cy,s){const f=v=>v.toFixed(1);return 'M'+f(cx)+' '+f(cy+s*0.9)+'C'+f(cx-s*1.6)+' '+f(cy-s*0.2)+' '+f(cx-s*0.8)+' '+f(cy-s*1.3)+' '+f(cx)+' '+f(cy-s*0.4)+'C'+f(cx+s*0.8)+' '+f(cy-s*1.3)+' '+f(cx+s*1.6)+' '+f(cy-s*0.2)+' '+f(cx)+' '+f(cy+s*0.9)+'Z';}
+function ringPts(n,r,fn){const o=[];for(let k=0;k<n;k++){const a=k/n*Math.PI*2-Math.PI/2;o.push(fn(60+r*Math.cos(a),60+r*Math.sin(a),a,k));}return o;}
+function star(cx,cy,R,r,n){let d='';for(let k=0;k<n*2;k++){const a=k*Math.PI/n-Math.PI/2,rr=k%2?r:R;d+=(k?'L':'M')+(cx+rr*Math.cos(a)).toFixed(1)+' '+(cy+rr*Math.sin(a)).toFixed(1);}return d+'Z';}
+function dot(cx,cy,r){const f=v=>v.toFixed(1);return 'M'+f(cx-r)+' '+f(cy)+'a'+r+' '+r+' 0 1 0 '+(2*r)+' 0a'+r+' '+r+' 0 1 0 '+(-2*r)+' 0Z';}
+function pt(deg,r){const a=deg*Math.PI/180;return[60+r*Math.cos(a),60+r*Math.sin(a)];}
+function bolt(cx,cy,s){const f=v=>v.toFixed(1);return 'M'+f(cx+.5*s)+' '+f(cy-3.5*s)+'L'+f(cx-2*s)+' '+f(cy+.5*s)+'L'+f(cx)+' '+f(cy+.5*s)+'L'+f(cx-.5*s)+' '+f(cy+3.5*s)+'L'+f(cx+2*s)+' '+f(cy-.5*s)+'L'+f(cx)+' '+f(cy-.5*s)+'Z';}
+function tongue(a,r0,r1,w){const f=v=>v.toFixed(1),c=Math.cos(a),s=Math.sin(a),px=-s,py=c,bx=60+r0*c,by=60+r0*s,tx=60+r1*c,ty=60+r1*s,m=(r0+r1)/2,mx=60+m*c,my=60+m*s;
+ return{d:'M'+f(bx+px*w)+' '+f(by+py*w)+'Q'+f(mx+px*w*1.4)+' '+f(my+py*w*1.4)+' '+f(tx)+' '+f(ty)+'Q'+f(mx-px*w*0.6)+' '+f(my-py*w*0.6)+' '+f(bx-px*w)+' '+f(by-py*w)+'Z',ox:bx,oy:by};}
+const P={ruby:['#FFC2CC','#E0314B','#7A0F22'],emerald:['#B6F5D2','#17B26A','#0A5E38'],sapphire:['#BFD9FF','#2F6FDE','#12327A'],amethyst:['#E3CCFF','#8F5FD6','#472283'],rose:['#FFD6E6','#F06292','#8E1F4A'],onyx:['#9AA3AD','#3A424B','#0E1114','#F06292'],ivory:['#FFFFFF','#F3EBD8','#B9AC8C','#FFB3C7'],sunset:['#FFD36A','#FF6B6B','#7A3FD1'],silver:['#FFFFFF','#BFC7D1','#6B7380'],ocean:['#9BF1FF','#2FA8E6','#134E8F'],mint:['#D7FFE9','#5CE0A6','#1E8C63'],pearl:['#FFFFFF','#EDE4F7','#B7A9CF'],sky:['#D2EEFF','#6CC3FF','#2D77C9'],coral:['#FFD3C2','#FF7A5C','#B8341C'],amber:['#FFE9A0','#FFB000','#B36A00'],violet:['#E6D4FF','#9B6BFF','#4A2AA3'],red:['#FF9A8A','#E0314B','#7A0F22'],white:['#FFFFFF','#E8F0FF','#9DB4DC'],green:['#C8F2A0','#5FBF4E','#2E7D32'],cyan:['#E8F8FF','#4FC3FF','#2F6FDE'],comet:['#FFFFFF','#7DF9FF','#2F6FDE']};
+const CROWN='M40 22L35 6L49 14L60 1L71 14L85 6L80 22Z';
+const EARS=(g)=>[sh('M24 36L26 4L50 17Z','G',g[2],1),sh('M96 36L94 4L70 17Z','G',g[2],1),sh('M30 30L31 12L44 20Z',g[3]||'#FFFFFF','none',0,null,0.85),sh('M90 30L89 12L76 20Z',g[3]||'#FFFFFF','none',0,null,0.85)];
+const HORNS=()=>[sh('M32 26C20 22 18 8 28 2C27 12 36 16 46 19Z','G','none',0),sh('M88 26C100 22 102 8 92 2C93 12 84 16 74 19Z','G','none',0)];
+const WINGS=(g)=>[sh('M17 62C6 58 3 40 8 26C13 34 20 38 24 40C19 44 17 52 17 62Z','G',g[2],1),sh('M103 62C114 58 117 40 112 26C107 34 100 38 96 40C101 44 103 52 103 62Z','G',g[2],1)];
+const FAMS=[
+ {n:0,cost:60,pal:[GOLD,P.ruby,P.emerald,P.sapphire,P.amethyst,P.rose,P.onyx,P.ivory,P.sunset],b:g=>[sh(circ(49.5),'none','G',5),sh(circ(45),'none','#FFFFFF',1,null,0.5)]},
+ {n:1,cost:90,pal:[GOLD,P.rose,P.ocean,P.mint,P.silver],b:g=>[sh(circ(50.5),'none','G',3),sh(circ(44.5),'none','G',3)]},
+ {n:2,cost:70,pal:[P.pearl,P.sky,P.coral,P.mint,P.violet],b:g=>[sh(circ(49),'none','G',5.5,'0.1 9')]},
+ {n:3,cost:70,pal:[P.amber,P.violet,P.ocean,P.rose],b:g=>[sh(circ(49),'none','G',5,'16 8')]},
+ {n:4,cost:300,pal:[P.green,GOLD,P.silver,P.rose],b:g=>laurel()},
+ {n:5,cost:220,pal:[P.rose,P.onyx,P.ivory,P.sky],b:g=>EARS(g)},
+ {n:6,cost:260,pal:[P.red,P.onyx,P.violet],b:g=>HORNS()},
+ {n:7,cost:420,pal:[P.white,P.onyx,P.rose,GOLD],b:g=>WINGS(g)},
+ {n:8,cost:460,pal:[GOLD,P.silver,P.ruby,P.sapphire],b:g=>[sh(CROWN,'G',g[2],1.5)]},
+ {n:9,cost:520,pal:[GOLD,P.silver,P.rose],b:g=>[sh(star(60,8,8,3.4,5),'G',g[2],0.8),sh(star(40,13,5.5,2.4,5),'G',g[2],0.8),sh(star(80,13,5.5,2.4,5),'G',g[2],0.8)]},
+ {n:10,cost:160,pal:[P.rose,P.red,P.violet,P.sky],b:g=>ringPts(10,49,(x,y)=>sh(heart(x,y,4),'G','none',0))},
+ {n:11,cost:200,pal:[P.rose,P.sky,P.amber],b:g=>ringPts(14,49,(x,y)=>sh(dot(x,y,4.2),'G','none',0)).concat(ringPts(14,49,(x,y)=>sh(dot(x,y,1.6),'#FFD54A','none',0)))},
+ {n:12,mv:1,cost:120,pal:[['#35F2FF','#7A5CFF','#FF3DDB'],['#E6FF6B','#3DDC97','#1AA0FF'],['#FFB3F0','#FF3DDB','#7A1FFF']],b:g=>[sh(circ(49),'none','G',3.5,null,1,A('decoPulse',1.8,0,'ease-in-out')),sh(circ(49),'none','G',2,null,1,A('ripple',2.4,0,'ease-out')),sh(circ(49),'none','G',2,null,1,A('ripple',2.4,1.2,'ease-out'))].concat([[18,22],[102,26],[14,92],[106,88]].map((q,k)=>sh(star(q[0],q[1],5,1.5,4),'#FFFFFF','none',0,null,1,A('twinkle',1.7,k*0.4,'ease-in-out'),q[0],q[1])))},
+ {n:13,mv:1,cost:180,pal:[['#FFE9A6','#FF7AD9','#8E6BFF'],GOLD,P.comet],b:g=>[sh(circ(49),'none','G',6,'0.1 11.5',1,A('decoSpin',14)),sh(circ(54.5),'none','#FFFFFF',3,'0.1 17',0.9,A('decoSpinRev',20))].concat(ringPts(6,51,(x,y,a,k)=>sh(star(x,y,6,1.8,4),'G','none',0,null,1,A('twinkle',1.8,k*0.3,'ease-in-out'),x,y)))},
+ {n:14,mv:1,cost:250,pal:[GOLD,P.comet,P.rose],b:g=>[sh('M38 14a22 6 0 1 0 44 0a22 6 0 1 0 -44 0','none','G',4,null,1,A('floaty',3,0,'ease-in-out')),sh('M33 14a27 8 0 1 0 54 0a27 8 0 1 0 -54 0','none','G',1.5,null,0.6,A('ripple',2.6,0,'ease-out'),60,14)].concat([[26,10],[94,10],[44,3],[76,3]].map((q,k)=>sh(star(q[0],q[1],4,1.2,4),'G','none',0,null,1,A('twinkle',1.6,k*0.45,'ease-in-out'),q[0],q[1])))},
+ {n:15,mv:1,cost:600,pal:[['#FFD36A','#FF7A1F','#E02B1F'],['#D6F3FF','#3FA9FF','#1B3FBF'],['#E0FFE0','#3DDC6A','#0B7A3A'],['#F0D4FF','#B14DFF','#5A1AA0']],b:g=>{const o=[];for(let k=0;k<16;k++){const t=tongue(k/16*Math.PI*2,45,56+(k%3)*3,3.2);o.push(sh(t.d,'G','none',0,null,1,A('flameWave',1+(k%4)*0.15,k*0.11,'ease-in-out'),t.ox,t.oy));}
+   o.push(sh(circ(46),'none','G',2,'16 8',0.8,A('flow',2.4)));[[30,18],[92,20],[60,5]].forEach((q,k)=>o.push(sh(dot(q[0],q[1],1.8),'#FFE9A0','none',0,null,1,A('particleUp',1.8,k*0.6,'ease-out'),q[0],q[1])));return o;}},
+ {n:16,mv:1,cost:450,pal:[['#FF5F6D','#FFD93D','#3DDC97'],['#FFC1E3','#FFE9A8','#B8F2E6'],['#7CFFCB','#5B8CFF','#C76BFF']],b:g=>[sh(circ(49),'none','G',5,null,1,A('decoSpin',4)),sh(circ(54.5),'none','#FFFFFF',2,'2 10',0.7,A('flow',1.6))]},
+ {n:17,mv:1,cost:380,pal:[P.cyan,['#FFF6B0','#FFD60A','#FF8A00'],P.violet],b:g=>[sh(circ(49),'none','G',3.5,'6 6',1,A('flow',1.1))].concat(ringPts(6,52,(x,y,a,k)=>sh(bolt(x,y,2.4),'#FFFFFF','G',0.8,null,1,A('zap',1.6,k*0.27),x,y)))},
+ {n:18,mv:1,cost:240,pal:[P.comet,GOLD,P.rose],b:g=>{const p0=pt(-90,49),p1=pt(-104,49),p2=pt(-118,49);return[sh(circ(49),'none','#FFFFFF',1.5,null,0.45),sh(dot(p0[0],p0[1],5),'G','none',0,null,1,A('decoSpin',3.4)),sh(dot(p1[0],p1[1],3.8),'G','none',0,null,0.6,A('decoSpin',3.4)),sh(dot(p2[0],p2[1],2.6),'G','none',0,null,0.35,A('decoSpin',3.4))];}},
+ {n:19,mv:1,cost:320,pal:[P.amber,P.ocean,P.rose],b:g=>{const o1=pt(-90,54),o2=pt(90,46.5);return[sh(circ(54),'none','#FFFFFF',1,null,0.35),sh(circ(46.5),'none','#FFFFFF',1,null,0.35),sh(dot(o1[0],o1[1],4.5),'G','none',0,null,1,A('decoSpin',6)),sh(dot(o2[0],o2[1],4),'G','none',0,null,1,A('decoSpinRev',4))];}},
+ {n:20,mv:1,cost:360,pal:[P.comet,GOLD,['#FFD6E6','#FF6EB4','#8E1F4A']],b:g=>[sh(circ(49),'none','G',5,'70 240',1,A('decoSpin',2.6)),sh(circ(54),'none','G',3,'40 270',0.7,A('decoSpinRev',4.4)),sh(circ(44.5),'none','#FFFFFF',1.5,'0.1 14',0.8,A('decoSpin',7))]},
+ {n:21,mv:1,cost:280,pal:[P.rose,P.red,P.violet],b:g=>ringPts(10,49,(x,y,a,k)=>sh(heart(x,y,4),'G','none',0,null,1,A('beat',1.2,(k%2)*0.6,'ease-in-out'),x,y))},
+ {n:22,mv:1,cost:550,pal:[['#7CFFCB','#5B8CFF','#C76BFF'],['#FFD36A','#FF6B9E','#7A3FD1'],['#CFFBFF','#7DB8FF','#B6A2FF']],b:g=>[sh(circ(50),'none','G',6,null,0.85,A('decoPulse',3.2,0,'ease-in-out')),sh(circ(44.5),'none','G',2,'24 24',0.7,A('flow',3.2)),sh(circ(55),'none','G',2,'16 8',0.55,A('decoSpinRev',12))]},
+ {n:23,mv:1,cost:300,pal:[['#D7FFE9','#3DDC97','#0A8F5A'],P.cyan,P.amber],b:g=>[sh(circ(49),'none','#FFFFFF',1.5,null,0.45),sh(circ(49),'none','G',5,'90 220',1,A('decoSpin',2.4))].concat([[-60,49],[20,49],[150,49]].map((q,k)=>{const p=pt(q[0],q[1]);return sh(dot(p[0],p[1],2.6),'#FFFFFF','none',0,null,1,A('twinkle',2.4,k*0.8,'ease-in-out'),p[0],p[1]);}))},
+ {n:24,mv:1,cost:420,pal:[GOLD,P.silver,P.rose],b:g=>[sh(circ(49),'none','#FFFFFF',1,null,0.3)].concat(ringPts(8,50,(x,y,a,k)=>sh(star(x,y,k%2?5:7,1.6,4),'G','none',0,null,1,A('twinkle',1.9,k*0.24,'ease-in-out'),x,y)))},
+ {n:25,mv:1,cost:260,pal:[['#FFFFFF','#CFE8FF','#8EC5FF'],['#FFE3EC','#FFA6C1','#E0527E'],['#FFF1A8','#FFC93D','#E08A00']],b:g=>[sh(circ(49),'none','G',4,'0.1 7',1,A('decoSpin',24))].concat(ringPts(10,52,(x,y,a,k)=>sh(dot(x,y,1.8+(k%3)*0.6),'G','none',0,null,1,A('particleDown',2.8,k*0.28,'ease-in'))))},
+ {n:26,mv:1,cost:640,pal:[['#FF9AF5','#7A5CFF','#35F2FF'],['#FFD36A','#FF7A1F','#E02B1F'],P.ocean],b:g=>[sh(circ(49),'none','G',5,'30 10 4 4',1,A('decoSpin',2.8)),sh(circ(54.5),'none','#FFFFFF',2.5,'6 14',0.7,A('decoSpinRev',4)),sh(circ(44),'none','G',2,'2 10',0.8,A('flow',1.6))]},
+ {n:27,mv:1,cost:230,pal:[P.sky,P.rose,P.mint],b:g=>[[22,34,5],[98,38,4],[14,70,3.5],[106,78,5],[34,100,4],[86,102,3.5],[60,10,3]].map((q,k)=>sh(dot(q[0],q[1],q[2]),'G','#FFFFFF',1.2,null,0.75,A('particleUp',3.2,k*0.45,'ease-out'),q[0],q[1]))}
+];
+function mk(shapes,pre,i){const u='url(#'+pre+i+')';return shapes.map(x=>({d:x.d,fill:x.fill==='G'?u:x.fill,stroke:x.s==='G'?u:x.s,sw:x.sw||0,dash:x.dash||'none',op:x.op==null?1:x.op,anim:x.an||'none',origin:(x.ox==null?60:x.ox)+'px '+(x.oy==null?60:x.oy)+'px'}));}
+const TIERC=[['#F6C7A0','#C9783A','#7A3F16','#FFE7CF'],['#FFFFFF','#BFC7D1','#6B7380','#F5F8FC'],['#FFF1A8','#F5B82E','#B97A0A','#FFF9DB'],['#D9F7FF','#4FC9E8','#1A6C88','#F2FDFF']];
+const FAM=[{k:'streak',icon:'flame',thr:[3,7,14,30]},{k:'tasks',icon:'star',thr:[5,25,60,120]},{k:'perfect',icon:'crown',thr:[1,3,7,14]},{k:'hyd',icon:'drop',thr:[3,8,15,30]},{k:'str',icon:'bolt',thr:[3,8,15,30]},{k:'mind',icon:'moon',thr:[3,8,15,30]},{k:'profile',icon:'user',thr:[1,2,3]},{k:'lang',icon:'bubble',thr:[2,3,4]}];
+function stats(st){return{streak:st.bestStreak,tasks:st.total,perfect:Object.keys(st.days).length,hyd:st.cat.hyd||0,str:st.cat.str||0,mind:st.cat.mind||0,profile:(st.name.trim()?1:0)+(st.pic?1:0)+(st.banner?1:0),lang:Object.keys(st.langsUsed).length};}
+function famTiers(st){const v=stats(st);return FAM.map(f=>f.thr.filter(t=>v[f.k]>=t).length);}
+const ACCENTS = [['Teal','#0B7F70','#D5F0EA'],['Violet','#6D5BD0','#E4E0FA'],['Coral','#C8431F','#FBE0D8'],['Blue','#2F6FDE','#DCE7FB']];
+const LANGS = [['en','English','en-US','ltr'],['ar','العربية','ar-EG','rtl'],['fr','Français','fr-FR','ltr'],['es','Español','es-ES','ltr']];
+const T = {
+ en:{today:'Today',medals:'Medals',me:'Me',challenge:"Today's challenge",doneOf:'{n} of 5 done. New tasks arrive every day.',preview:"Preview tomorrow's tasks",pts:'pts',owned:'Owned',buy:'Buy',locked:'Locked',unlocked:'Unlocked',tasksDone:'Tasks done',medalsLbl:'Medals',achievements:'Achievements',makeYours:'Make it yours',accent:'Accent color',dark:'Dark mode',large:'Larger text',on:'On',off:'Off',sound:'Sound effects',language:'Language',
+  name:'Display name',namePh:'Your name',photo:'Change photo',banner:'Change banner',level:'Level',streak:'Day streak',streakIdle:'Finish all 5 tasks today to extend your streak',streakOn:'Streak is alive. See you tomorrow!',streakToast:'Streak extended!',bestStreak:'Best streak',trans:'Tab transitions',toNext:'{n} pts to {m}',allMedals:'All medals collected!',frames:'Decorations',equip:'Equip',equipped:'Equipped',free:'Free',awards:'Awards',badges:'Badges',maxed:'Max level',noBadges:'Earn badges by completing challenges. They appear next to your name.',badgeNew:'New badge:',badgeUp:'Badge upgraded:',fAll:'All',fStatic:'Static',fMoving:'Moving',tn:['Bronze','Silver','Gold','Diamond'],fam:['Streak Flame','Task Master','Perfect Days','Hydration Hero','Iron Body','Zen Mind','Profile Pro','Polyglot'],fd:['Reach a {n}-day streak','Complete {n} tasks','Finish all 5 tasks on {n} days','Complete {n} hydration tasks','Complete {n} strength tasks','Complete {n} mind tasks','Complete {n} profile steps (name, photo, banner)','Use {n} different languages'],color:'Color',none:'None',schedule:'Streak schedule',schedSub:'Orange days are days you finished all 5 tasks.',close:'Close',prevM:'Previous month',nextM:'Next month',dn:['Solid Ring','Twin Ring','Dotted Ring','Dashed Ring','Laurel Wreath','Cat Ears','Devil Horns','Wings','Crown','Star Crown','Heart Ring','Flower Wreath','Neon Pulse','Sparkle Orbit','Halo','Flame Aura','Rainbow Spin','Lightning Ring','Orbit Dot','Twin Orbit','Comet','Heartbeat','Aurora','Radar Sweep','Twinkle Stars','Snowfall','Vortex','Bubble Float'],
+  med:['Sprout','Bronze Step','Silver Stride','Hydro Hero','Gold Pulse','Iron Streak','Zen Master','Summit','Champion','Legend'],
+  mot:['Every journey starts small.','You showed up. That counts.','Momentum is building.','Hydrated and unstoppable.','Your heart is in it.','Consistency beats intensity.','Calm mind, strong body.','Look how far you climbed.','Crowned by your own effort.','Your habits made you legendary.'],
+  ach:[['First step','Complete your first task'],['Hat-trick','Finish 3 tasks in one day'],['Perfect day','Finish all 5 tasks in one day'],['Collector','Own 2 medals'],['Rising star','Earn 200 points in total'],['On fire','Reach a 3-day streak'],['Week warrior','Reach a 7-day streak']],
+  cat:{hyd:'Hydration',mov:'Movement',flex:'Flexibility',sleep:'Sleep',nut:'Nutrition',mind:'Mind',str:'Strength',rest:'Rest'}},
+ ar:{today:'اليوم',medals:'الأوسمة',me:'أنا',challenge:'تحدي اليوم',doneOf:'{n} من 5 مكتملة. مهام جديدة كل يوم.',preview:'معاينة مهام الغد',pts:'نقطة',owned:'مملوك',buy:'شراء',locked:'مقفل',unlocked:'مفتوح',tasksDone:'مهام منجزة',medalsLbl:'الأوسمة',achievements:'الإنجازات',makeYours:'خصّص تطبيقك',accent:'لون التطبيق',dark:'الوضع الداكن',large:'خط أكبر',on:'مفعّل',off:'متوقف',sound:'المؤثرات الصوتية',language:'اللغة',
+  name:'الاسم المعروض',namePh:'اسمك',photo:'تغيير الصورة',banner:'تغيير الغلاف',level:'المستوى',streak:'أيام متتالية',streakIdle:'أنهِ المهام الخمس اليوم لتمديد سلسلتك',streakOn:'السلسلة مستمرة. نراك غدًا!',streakToast:'تم تمديد السلسلة!',bestStreak:'أفضل سلسلة',trans:'انتقالات التبويبات',toNext:'{n} نقطة للحصول على {m}',allMedals:'جمعت كل الأوسمة!',frames:'الزخارف',equip:'تجهيز',equipped:'مُجهّز',free:'مجاني',awards:'الجوائز',badges:'الشارات',maxed:'أعلى مستوى',noBadges:'اجمع الشارات بإكمال التحديات لتظهر بجانب اسمك.',badgeNew:'شارة جديدة:',badgeUp:'تمت ترقية الشارة:',fAll:'الكل',fStatic:'ثابتة',fMoving:'متحركة',tn:['برونزي','فضي','ذهبي','ماسي'],fam:['لهيب السلسلة','سيد المهام','أيام مثالية','بطل الترطيب','جسد حديدي','ذهن هادئ','ملف احترافي','متعدد اللغات'],fd:['حقق سلسلة {n} أيام','أنجز {n} مهمة','أنهِ المهام الخمس في {n} أيام','أنجز {n} مهام ترطيب','أنجز {n} مهام قوة','أنجز {n} مهام ذهنية','أكمل {n} خطوات من ملفك (الاسم والصورة والغلاف)','استخدم {n} لغات مختلفة'],color:'اللون',none:'بدون',schedule:'جدول السلسلة',schedSub:'الأيام البرتقالية هي الأيام التي أنهيت فيها المهام الخمس.',close:'إغلاق',prevM:'الشهر السابق',nextM:'الشهر التالي',dn:['حلقة سادة','حلقة مزدوجة','حلقة منقّطة','حلقة متقطعة','إكليل الغار','أذنا قطة','قرنا شيطان','أجنحة','تاج','تاج النجوم','حلقة قلوب','إكليل زهور','نبض نيون','مدار متلألئ','هالة','هالة اللهب','دوران قوس قزح','حلقة البرق','نقطة مدارية','مداران','مذنّب','نبضة قلب','شفق','مسح الرادار','نجوم لامعة','تساقط الثلج','دوامة','فقاعات طافية'],
+  med:['برعم','خطوة برونزية','خطوة فضية','بطل الماء','نبض ذهبي','سلسلة حديدية','سيد الهدوء','القمة','بطل','أسطورة'],
+  mot:['كل رحلة تبدأ صغيرة.','حضرتَ، وهذا يكفي.','الزخم يتصاعد.','ترطيب كامل وإصرار لا يتوقف.','قلبك في هذا الطريق.','الاستمرار أقوى من الشدة.','عقل هادئ وجسم قوي.','انظر كم صعدت.','تُوِّجتَ بجهدك.','عاداتك صنعت منك أسطورة.'],
+  ach:[['الخطوة الأولى','أكمل أول مهمة'],['ثلاثية','أنهِ 3 مهام في يوم واحد'],['يوم مثالي','أنهِ المهام الخمس في يوم واحد'],['جامع الأوسمة','امتلك وسامين'],['نجم صاعد','اكسب 200 نقطة إجمالاً'],['مشتعل','حقق سلسلة 3 أيام'],['محارب الأسبوع','حقق سلسلة 7 أيام']],
+  cat:{hyd:'الترطيب',mov:'الحركة',flex:'المرونة',sleep:'النوم',nut:'التغذية',mind:'الذهن',str:'القوة',rest:'الراحة'}},
+ fr:{today:"Aujourd'hui",medals:'Médailles',me:'Moi',challenge:'Défi du jour',doneOf:'{n} sur 5 faites. De nouvelles tâches chaque jour.',preview:'Voir les tâches de demain',pts:'pts',owned:'Possédée',buy:'Acheter',locked:'Verrouillée',unlocked:'Débloqué',tasksDone:'Tâches faites',medalsLbl:'Médailles',achievements:'Succès',makeYours:'Personnalisation',accent:'Couleur',dark:'Mode sombre',large:'Texte agrandi',on:'Activé',off:'Désactivé',sound:'Effets sonores',language:'Langue',
+  name:"Nom d'affichage",namePh:'Votre nom',photo:'Changer la photo',banner:'Changer la bannière',level:'Niveau',streak:'Jours consécutifs',streakIdle:"Terminez les 5 tâches aujourd'hui pour prolonger votre série",streakOn:'Série active. À demain !',streakToast:'Série prolongée !',bestStreak:'Meilleure série',trans:'Transitions entre onglets',toNext:'{n} pts pour {m}',allMedals:'Toutes les médailles obtenues !',frames:'Décorations',equip:'Équiper',equipped:'Équipée',free:'Gratuit',awards:'Récompenses',badges:'Badges',maxed:'Niveau max',noBadges:"Gagnez des badges en relevant des défis. Ils apparaissent à côté de votre nom.",badgeNew:'Nouveau badge :',badgeUp:'Badge amélioré :',fAll:'Toutes',fStatic:'Fixes',fMoving:'Animées',tn:['Bronze','Argent','Or','Diamant'],fam:['Flamme de série','Maître des tâches','Jours parfaits',"Héros de l'hydratation","Corps d'acier",'Esprit zen','Profil pro','Polyglotte'],fd:['Atteignez une série de {n} jours','Terminez {n} tâches','Finissez les 5 tâches pendant {n} jours',"Terminez {n} tâches d'hydratation",'Terminez {n} tâches de force',"Terminez {n} tâches d'esprit",'Complétez {n} étapes du profil (nom, photo, bannière)','Utilisez {n} langues différentes'],color:'Couleur',none:'Aucune',schedule:'Calendrier de série',schedSub:'Les jours orange sont ceux où vous avez fini les 5 tâches.',close:'Fermer',prevM:'Mois précédent',nextM:'Mois suivant',dn:['Anneau uni','Double anneau','Anneau pointillé','Anneau tireté','Couronne de laurier','Oreilles de chat','Cornes de diable','Ailes','Couronne',"Couronne d'étoiles",'Anneau de cœurs','Couronne de fleurs','Pulsation néon','Orbite scintillante','Auréole','Aura de flammes','Arc-en-ciel',"Anneau d'éclairs",'Point orbital','Double orbite','Comète','Battement','Aurore','Balayage radar','Étoiles scintillantes','Chute de neige','Vortex','Bulles flottantes'],
+  med:['Pousse','Pas de bronze',"Foulée d'argent","Héros de l'eau",'Pouls doré','Série de fer','Maître zen','Sommet','Champion','Légende'],
+  mot:['Tout voyage commence petit.',"Vous étiez là. Ça compte.","L'élan grandit.",'Hydraté et inarrêtable.','Votre cœur y est.',"La régularité bat l'intensité.",'Esprit calme, corps fort.','Regardez le chemin parcouru.','Couronné par votre effort.','Vos habitudes ont fait de vous une légende.'],
+  ach:[['Premier pas','Terminez votre première tâche'],['Triplé','Finissez 3 tâches en un jour'],['Journée parfaite','Finissez les 5 tâches en un jour'],['Collectionneur','Possédez 2 médailles'],['Étoile montante','Gagnez 200 points au total'],['En feu','Atteignez une série de 3 jours'],['Guerrier de la semaine','Atteignez une série de 7 jours']],
+  cat:{hyd:'Hydratation',mov:'Mouvement',flex:'Souplesse',sleep:'Sommeil',nut:'Nutrition',mind:'Esprit',str:'Force',rest:'Repos'}},
+ es:{today:'Hoy',medals:'Medallas',me:'Yo',challenge:'Reto de hoy',doneOf:'{n} de 5 hechas. Nuevas tareas cada día.',preview:'Ver las tareas de mañana',pts:'pts',owned:'Tuya',buy:'Comprar',locked:'Bloqueada',unlocked:'Logrado',tasksDone:'Tareas hechas',medalsLbl:'Medallas',achievements:'Logros',makeYours:'Personalízalo',accent:'Color',dark:'Modo oscuro',large:'Texto grande',on:'Sí',off:'No',sound:'Efectos de sonido',language:'Idioma',
+  name:'Nombre visible',namePh:'Tu nombre',photo:'Cambiar foto',banner:'Cambiar portada',level:'Nivel',streak:'Días seguidos',streakIdle:'Termina las 5 tareas hoy para ampliar tu racha',streakOn:'Racha activa. ¡Hasta mañana!',streakToast:'¡Racha ampliada!',bestStreak:'Mejor racha',trans:'Transiciones de pestañas',toNext:'{n} pts para {m}',allMedals:'¡Todas las medallas conseguidas!',frames:'Decoraciones',equip:'Equipar',equipped:'Equipada',free:'Gratis',awards:'Premios',badges:'Insignias',maxed:'Nivel máx.',noBadges:'Gana insignias completando retos. Aparecerán junto a tu nombre.',badgeNew:'Nueva insignia:',badgeUp:'Insignia mejorada:',fAll:'Todas',fStatic:'Fijas',fMoving:'Animadas',tn:['Bronce','Plata','Oro','Diamante'],fam:['Llama de racha','Maestro de tareas','Días perfectos','Héroe de la hidratación','Cuerpo de hierro','Mente zen','Perfil pro','Políglota'],fd:['Alcanza una racha de {n} días','Completa {n} tareas','Termina las 5 tareas durante {n} días','Completa {n} tareas de hidratación','Completa {n} tareas de fuerza','Completa {n} tareas de mente','Completa {n} pasos del perfil (nombre, foto, portada)','Usa {n} idiomas distintos'],color:'Color',none:'Ninguna',schedule:'Calendario de racha',schedSub:'Los días naranja son los días en que terminaste las 5 tareas.',close:'Cerrar',prevM:'Mes anterior',nextM:'Mes siguiente',dn:['Anillo liso','Anillo doble','Anillo punteado','Anillo discontinuo','Corona de laurel','Orejas de gato','Cuernos de diablo','Alas','Corona','Corona de estrellas','Anillo de corazones','Corona de flores','Pulso neón','Órbita brillante','Aureola','Aura de fuego','Arcoíris giratorio','Anillo de rayos','Punto orbital','Doble órbita','Cometa','Latido','Aurora','Barrido de radar','Estrellas centelleantes','Nevada','Vórtice','Burbujas flotantes'],
+  med:['Brote','Paso de bronce','Paso de plata','Héroe del agua','Pulso dorado','Racha de hierro','Maestro zen','Cumbre','Campeón','Leyenda'],
+  mot:['Todo viaje empieza pequeño.','Apareciste. Eso cuenta.','El impulso crece.','Hidratado e imparable.','Tu corazón está en ello.','La constancia vence a la intensidad.','Mente en calma, cuerpo fuerte.','Mira cuánto has subido.','Coronado por tu esfuerzo.','Tus hábitos te hicieron leyenda.'],
+  ach:[['Primer paso','Completa tu primera tarea'],['Triplete','Termina 3 tareas en un día'],['Día perfecto','Termina las 5 tareas en un día'],['Coleccionista','Consigue 2 medallas'],['Estrella en ascenso','Gana 200 puntos en total'],['En llamas','Alcanza una racha de 3 días'],['Guerrero semanal','Alcanza una racha de 7 días']],
+  cat:{hyd:'Hidratación',mov:'Movimiento',flex:'Flexibilidad',sleep:'Sueño',nut:'Nutrición',mind:'Mente',str:'Fuerza',rest:'Descanso'}}
+};
+function rng(seed){let a=seed;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function fitImage(file,w,h,done){
+ if(file.type==='image/gif'&&file.size<6e6){const rd=new FileReader();rd.onload=()=>done(rd.result);rd.readAsDataURL(file);return;}
+ const fr=new FileReader();
+ fr.onload=()=>{const im=new Image();im.onload=()=>{try{const cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d');
+  const sc=Math.max(w/im.width,h/im.height),dw=im.width*sc,dh=im.height*sc;x.drawImage(im,(w-dw)/2,(h-dh)/2,dw,dh);done(cv.toDataURL('image/jpeg',0.85));}catch(err){}};im.src=fr.result;};
+ fr.readAsDataURL(file);
+}
+class Component extends DCLogic {
+ constructor(p){super(p);this.state={tab:'today',tdir:1,day:0,done:{},points:0,earned:0,total:0,best:0,owned:{},ai:0,dark:false,big:false,lang:0,sound:true,trans:true,bump:0,last:-1,name:'',pic:'',banner:'',days:{},streak:0,bestStreak:0,sb:0,toast:false,shopTab:'medals',deco:'',decoOwned:{},decoPick:{},sheet:false,calM:0,cat:{},langsUsed:{0:true},decoFilter:'all',lastBadge:-1,toastMsg:''};}
+ sfx(kind){
+  if(!this.state.sound)return;
+  try{
+   const AC=window.AudioContext||window.webkitAudioContext; if(!AC)return;
+   this.ac=this.ac||new AC(); const ac=this.ac; if(ac.state==='suspended')ac.resume();
+   const seq={nav:[[520,0,.07,'sine']],tap:[[660,0,.08,'sine']],done:[[523,0,.12,'triangle'],[659,.09,.12,'triangle'],[784,.18,.2,'triangle']],buy:[[392,0,.1,'square'],[523,.09,.1,'square'],[659,.18,.1,'square'],[1047,.27,.3,'triangle']],streak:[[440,0,.1,'triangle'],[554,.08,.1,'triangle'],[659,.16,.1,'triangle'],[880,.24,.12,'triangle'],[1175,.34,.4,'sine']]}[kind]||[];
+   const t0=ac.currentTime;
+   seq.forEach(n=>{const o=ac.createOscillator(),g=ac.createGain();o.type=n[3];o.frequency.value=n[0];
+    g.gain.setValueAtTime(0.0001,t0+n[1]);g.gain.exponentialRampToValueAtTime(0.12,t0+n[1]+0.015);g.gain.exponentialRampToValueAtTime(0.0001,t0+n[1]+n[2]);
+    o.connect(g);g.connect(ac.destination);o.start(t0+n[1]);o.stop(t0+n[1]+n[2]+0.05);});
+  }catch(err){}
+ }
+ commit(upd,snd){
+  const s=this.state,ns={...s,...upd},a=famTiers(s),b=famTiers(ns),Lx=T[LANGS[ns.lang][0]];let up=-1;
+  b.forEach((t,i)=>{if(t>a[i])up=i;});
+  if(up>=0){upd.lastBadge=up;upd.toast=true;upd.toastMsg=(a[up]?Lx.badgeUp:Lx.badgeNew)+' '+Lx.fam[up]+' · '+Lx.tn[b[up]-1];if(snd!=='streak')snd='buy';}
+  if(upd.toast){clearTimeout(this.tt);this.tt=setTimeout(()=>this.setState({toast:false}),2600);}
+  if(snd)this.sfx(snd);
+  this.setState(upd);
+ }
+ renderVals(){
+  const s=this.state, dk=s.dark, A=ACCENTS[s.ai], lg=LANGS[s.lang], L=T[lg[0]], rtl=lg[3]==='rtl';
+  const d=new Date(BASE0+s.day*864e5), key=d.toISOString().slice(0,10);
+  let seed=0;for(const ch of key)seed=(seed*31+ch.charCodeAt(0))|0;
+  const r=rng(seed), idx=TASKS.map((_,i)=>i);
+  for(let i=idx.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
+  const c={bg:dk?'#14181C':'#F6F4EF',card:dk?'#1F252B':'#FFFFFF',text:dk?'#F2F4F5':'#1D2327',sub:dk?'#A9B3BA':'#59646B',accent:A[1],accentSoft:dk?'#2A3238':A[2]};
+  if(dk)c.accent=s.ai===0?'#2BB5A0':s.ai===1?'#8E80E8':s.ai===2?'#F0805F':'#5A93F0';
+  c.accentText=dk?c.accent:A[1];
+  const k=s.big?1.15:1, f={h1:Math.round(30*k)+'px',h2:Math.round(19*k)+'px',body:Math.round(16*k)+'px',small:Math.round(13*k)+'px'};
+  const bumpOf=()=>s.bump+1;
+  const todayDone=!!s.days[s.day], alive=todayDone||!!s.days[s.day-1], streakNow=alive?s.streak:0;
+  const tasks=idx.slice(0,5).map((i,n)=>{const t=TASKS[i],done=!!s.done[i];return{title:t[2][s.lang],cat:L.cat[t[0]],pts:t[1],done,fill:done?c.accent:'transparent',border:done?c.accent:'transparent',anim:'rise .45s ease '+(n*0.07)+'s both',
+   tap:()=>{if(done)return;const dn=Object.keys(s.done).length+1;
+    const upd={done:{...s.done,[i]:true},points:s.points+t[1],earned:s.earned+t[1],total:s.total+1,best:Math.max(s.best,dn),bump:bumpOf(),cat:{...s.cat,[t[0]]:(s.cat[t[0]]||0)+1}};
+    let snd='done';
+    if(dn>=5&&!s.days[s.day]){const ns=s.days[s.day-1]?s.streak+1:1;upd.days={...s.days,[s.day]:true};upd.streak=ns;upd.bestStreak=Math.max(s.bestStreak,ns);upd.sb=s.sb+1;upd.toast=true;upd.toastMsg=L.streakToast+' '+ns;snd='streak';}
+    this.commit(upd,snd);}};});
+  const doneCount=Object.keys(s.done).length, ownedCount=Object.keys(s.owned).length;
+  const medals=MEDALS.map((m,i)=>{const own=!!s.owned[i],can=s.points>=m[0],g=m[2];return{i,name:L.med[i],motto:L.mot[i],cost:m[0],icon:ICON[m[1]],hi:g[0],mid:g[1],lo:g[2],emb:m[3],rib:m[4],ribDark:m[5],
+   op:own?1:can?0.95:0.7,filter:own?'none':can?'grayscale(0.35)':'grayscale(1) brightness(0.92)',anim:s.last===i?'spin .6s ease both':own?'floaty 3.2s ease-in-out infinite':'none',
+   off:own||!can,label:own?L.owned:can?L.buy:L.locked,btnBg:own?c.accentSoft:can?c.accent:c.accentSoft,btnFg:own?c.accentText:can?'#fff':c.sub,
+   buy:()=>{if(own||!can)return;this.sfx('buy');this.setState({points:s.points-m[0],owned:{...s.owned,[i]:true},last:i,bump:bumpOf()});}};});
+  const nx=MEDALS.findIndex((m,i)=>!s.owned[i]);
+  const nextText=nx<0?L.allMedals:L.toNext.replace('{n}',Math.max(0,MEDALS[nx][0]-s.points)).replace('{m}',L.med[nx]);
+  const got=[s.total>=1,s.best>=3,s.best>=5,ownedCount>=2,s.earned>=200,s.bestStreak>=3,s.bestStreak>=7];
+  const ach=L.ach.map((a,i)=>({title:a[0],desc:a[1],op:got[i]?1:0.55,dot:got[i]?c.accent:c.sub,tag:got[i]?L.unlocked:L.locked}));
+  const order=['today','shop','ach','me'];
+  const go=(t)=>()=>{if(t===s.tab)return;this.sfx('nav');this.setState({tab:t,tdir:order.indexOf(t)>order.indexOf(s.tab)?1:-1,last:-1,lastBadge:(t==='me'||t==='ach')?s.lastBadge:-1});};
+  const tabs=[['today',L.today],['shop',L.medals],['ach',L.awards],['me',L.me]].map(t=>({label:t[1],bg:s.tab===t[0]?c.accent:'transparent',fg:s.tab===t[0]?'#fff':c.sub,go:go(t[0])}));
+  const accents=ACCENTS.map((a,i)=>({name:a[0],color:a[1],ring:s.ai===i?c.text:'transparent',pick:()=>{this.sfx('tap');this.setState({ai:i});}}));
+  const langs=LANGS.map((g,i)=>({name:g[1],bg:s.lang===i?c.accent:c.accentSoft,fg:s.lang===i?'#fff':c.accentText,pick:()=>{this.commit({lang:i,langsUsed:{...s.langsUsed,[i]:true}},'tap');}}));
+  const weekDots=[0,1,2,3,4,5,6].map(n=>{const dd=s.day-6+n,lit=!!s.days[dd];return{lit,bg:lit?'#E8561C':'transparent',border:lit?'#E8561C':(n===6?c.accent:c.accentSoft)};});
+  const lvl=Math.floor(s.earned/100)+1, nm=s.name.trim(), par=s.sb%2?'A':'B';
+  const tdv=s.tdir*(rtl?-1:1);
+  const bannerBg=s.banner?'url("'+s.banner+'") center / cover no-repeat':'linear-gradient(120deg,'+c.accent+','+(dk?'#3A4650':'#F2B76B')+')';
+  const ini0=(nm||'M').charAt(0).toUpperCase();
+  const anyOwn=(f)=>Object.keys(s.decoOwned).some(k=>k.split('-')[0]===String(f));
+  const eqF=s.deco?+s.deco.split('-')[0]:-1, eqC=s.deco?+s.deco.split('-')[1]:0;
+  const eqFam=eqF>=0?FAMS[eqF]:null, eg=eqFam?eqFam.pal[eqC]:GOLD;
+  const avBgv=s.pic?'url("'+s.pic+'") center / cover no-repeat':c.accent;
+  const glowOf=(fm,g)=>fm.mv?'drop-shadow(0 0 6px '+g[1]+')':'drop-shadow(0 1px 2px rgba(0,0,0,.3))';
+  const decosAll=FAMS.map((fm,fi)=>{const ci=s.decoPick[fi]||0,g=fm.pal[ci],key=fi+'-'+ci,own=!!s.decoOwned[key],eq=s.deco===key;
+   const price=anyOwn(fi)?Math.round(fm.cost*0.4/5)*5:fm.cost,can=s.points>=price;
+   return{i:fi,cost:fm.cost,mv:!!fm.mv,name:L.dn[fm.n],costText:own?L.owned:(price+' '+L.pts),shapes:mk(fm.b(g),'dgT',fi),ga:g[0],gb:g[1],gc:g[2],glow:glowOf(fm,g),
+    swatches:fm.pal.map((pg,pi)=>({color:pg[1],ring:pi===ci?c.text:'transparent',label:L.color+' '+(pi+1),mark:s.decoOwned[fi+'-'+pi]?'✓':'',pick:()=>{this.sfx('tap');this.setState({decoPick:{...s.decoPick,[fi]:pi}});}})),
+    avBg:avBgv,ini:s.pic?'':ini0,off:eq||(!own&&!can),label:eq?L.equipped:own?L.equip:can?L.buy:L.locked,
+    btnBg:eq?c.accentSoft:(own||can)?c.accent:c.accentSoft,btnFg:eq?c.accentText:(own||can)?'#fff':c.sub,
+    act:()=>{if(eq)return;if(own){this.sfx('tap');this.setState({deco:key});return;}if(!can)return;this.sfx('buy');this.setState({points:s.points-price,decoOwned:{...s.decoOwned,[key]:true},deco:key,bump:bumpOf()});}};});
+  const noneOn=s.deco==='';
+  const noneItem={i:'n',cost:0,mv:false,name:L.none,costText:L.free,shapes:[],ga:'#fff',gb:'#fff',gc:'#fff',glow:'none',swatches:[],avBg:avBgv,ini:s.pic?'':ini0,off:noneOn,label:noneOn?L.equipped:L.equip,btnBg:noneOn?c.accentSoft:c.accent,btnFg:noneOn?c.accentText:'#fff',act:()=>{this.sfx('tap');this.setState({deco:''});}};
+  const flt=s.decoFilter;
+  const decos=[noneItem].concat(decosAll.filter(x=>flt==='all'||(flt==='static'?!x.mv:x.mv)).sort((x,y)=>x.cost-y.cost||x.i-y.i));
+  const realNow=new Date(BASE0), r0=Date.UTC(realNow.getFullYear(),realNow.getMonth(),realNow.getDate());
+  const cur=new Date(BASE0+s.day*864e5), mBase=new Date(cur.getFullYear(),cur.getMonth()+s.calM,1);
+  const first=mBase.getDay(), dim=new Date(mBase.getFullYear(),mBase.getMonth()+1,0).getDate(), cells=[];
+  for(let q=0;q<first;q++)cells.push({label:'',bg:'transparent',fg:c.text,border:'transparent'});
+  for(let dn2=1;dn2<=dim;dn2++){const off=Math.round((Date.UTC(mBase.getFullYear(),mBase.getMonth(),dn2)-r0)/864e5),lit=!!s.days[off];
+   cells.push({label:String(dn2),bg:lit?'#E8561C':'transparent',fg:lit?'#FFFFFF':(off>s.day?c.sub:c.text),border:off===s.day?c.accent:'transparent'});}
+  const weekdays=[0,1,2,3,4,5,6].map(q=>({label:new Date(2024,0,7+q).toLocaleDateString(lg[2],{weekday:'narrow'})}));
+  const monthLabel=mBase.toLocaleDateString(lg[2],{month:'long',year:'numeric'});
+  const filters=[['all',L.fAll],['static',L.fStatic],['moving',L.fMoving]].map(x=>({label:x[1],bg:flt===x[0]?c.accent:c.card,fg:flt===x[0]?'#fff':c.sub,pick:()=>{this.sfx('tap');this.setState({decoFilter:x[0]});}}));
+  const sv=stats(s), tiers=famTiers(s);
+  const fams=FAM.map((fm,i)=>{const tier=tiers[i],val=sv[fm.k],nt=fm.thr[tier],g=TIERC[Math.max(tier,1)-1];
+   return{i,tier,name:L.fam[i],label:L.fam[i]+(tier?' · '+L.tn[tier-1]:''),icon:ICON[fm.icon],hi:g[0],mid:g[1],lo:g[2],emb:g[3],filter:tier?'none':'grayscale(1)',op:tier?1:0.5,
+    anim:s.lastBadge===i?'spin .7s ease both':'none',desc:nt?L.fd[i].replace('{n}',nt):L.maxed,progW:(nt?Math.round(Math.min(val,nt)/nt*100):100)+'%',tierLabel:tier?L.tn[tier-1]:'—',prog:nt?Math.min(val,nt)+'/'+nt:''};});
+  const myBadges=fams.filter(b=>b.tier>0);
+  const shM=s.shopTab==='medals';
+  return{c,f,L,tasks,decos,filters,fams,myBadges,noBadges:myBadges.length===0,isAch:s.tab==='ach',toastText:s.toastMsg,decoShapes:eqFam?mk(eqFam.b(eg),'dgA',0):[],decoA:eg[0],decoB:eg[1],decoC:eg[2],decoAnim:'none',decoGlow:eqFam?glowOf(eqFam,eg):'none',
+   sheetOpen:s.sheet,cells,weekdays,monthLabel,arrowPrev:rtl?'›':'‹',arrowNext:rtl?'‹':'›',
+   openSched:()=>{this.sfx('nav');this.setState({sheet:true,calM:0});},closeSched:()=>{this.sfx('tap');this.setState({sheet:false});},
+   prevMonth:()=>{this.sfx('tap');this.setState({calM:s.calM-1});},nextMonth:()=>{this.sfx('tap');this.setState({calM:s.calM+1});},
+   shopMedals:shM,shopFrames:!shM,segMBg:shM?c.accent:'transparent',segMFg:shM?'#fff':c.sub,segFBg:shM?'transparent':c.accent,segFFg:shM?c.sub:'#fff',
+   goMedals:()=>{this.sfx('tap');this.setState({shopTab:'medals'});},goFrames:()=>{this.sfx('tap');this.setState({shopTab:'frames'});},
+   medals,achievements:ach,tabs,accents,langs,weekDots,doneCount,ownedCount,total:s.total,points:s.points,nextText,
+   dir:lg[3],bump:(s.bump%2?'bumpA':'bumpB')+' .45s ease',doneText:L.doneOf.replace('{n}',doneCount),
+   tabAnim:s.trans?(tdv>0?'tabR':'tabL')+' .35s ease both':'none',
+   streakNow,bestStreak:s.bestStreak,toast:s.toast,streakText:todayDone?L.streakOn:L.streakIdle,
+   flameFilter:todayDone?'drop-shadow(0 0 8px rgba(255,120,30,.6))':'grayscale(1) opacity(.55)',flameLoop:todayDone?'flick 1.4s ease-in-out infinite':'none',
+   burstAnim:s.sb?'burst'+par+' .7s ease':'none',ringAnim:s.sb?'ring'+par+' .9s ease-out':'none',streakNumAnim:s.sb?'burst'+par+' .6s ease':'none',
+   displayName:nm||'Meha',name:s.name,initial:(nm||'M').charAt(0).toUpperCase(),pic:s.pic,hasPic:!!s.pic,noPic:!s.pic,bannerBg,level:lvl,levelInto:s.earned%100,
+   progress:(doneCount/5*100)+'%',dateLabel:d.toLocaleDateString(lg[2],{weekday:'long',month:'long',day:'numeric'}),isToday:s.tab==='today',isShop:s.tab==='shop',isMe:s.tab==='me',
+   darkLabel:dk?L.on:L.off,bigLabel:s.big?L.on:L.off,soundLabel:s.sound?L.on:L.off,transLabel:s.trans?L.on:L.off,
+   onName:(e)=>this.commit({name:e.target.value},null),
+   onPic:(e)=>{const fl=e.target.files&&e.target.files[0];if(fl)fitImage(fl,320,320,u=>{this.commit({pic:u},'tap');});},
+   onBanner:(e)=>{const fl=e.target.files&&e.target.files[0];if(fl)fitImage(fl,900,320,u=>{this.commit({banner:u},'tap');});},
+   nextDay:()=>{this.sfx('nav');this.setState({day:s.day+1,done:{}});},
+   toggleDark:()=>{this.sfx('tap');this.setState({dark:!dk});},toggleBig:()=>{this.sfx('tap');this.setState({big:!s.big});},
+   toggleTrans:()=>{this.sfx('tap');this.setState({trans:!s.trans});},toggleSound:()=>{this.setState({sound:!s.sound},()=>this.sfx('tap'));}};
+ }
+}
+</script>
+<script>
+(function(){
+const KEY='meha-v1';let saved=null;
+try{saved=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){}
+const now=new Date(),todayMid=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+const baseMid=(saved&&saved.baseMid)||todayMid;
+window.BASE0=baseMid+12*3600e3;
+const comp=new Component({});
+if(saved&&saved.state){Object.assign(comp.state,saved.state);}
+const realOff=Math.round((todayMid-baseMid)/864e5);
+if(comp.state.day<realOff){comp.state.day=realOff;comp.state.done={};}
+comp.state.toast=false;comp.state.sheet=false;comp.state.last=-1;comp.state.lastBadge=-1;
+function save(){
+ const st=Object.assign({},comp.state);delete st.toast;delete st.toastMsg;delete st.sheet;delete st.last;delete st.lastBadge;
+ try{localStorage.setItem(KEY,JSON.stringify({baseMid,state:st}));}
+ catch(e){try{st.pic='';st.banner='';localStorage.setItem(KEY,JSON.stringify({baseMid,state:st}));}catch(e2){}}
+}
+window.__mount(comp,document.getElementById('app'),document.getElementById('tpl').content,save);
+if(location.protocol.indexOf('http')===0&&'serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+})();
+</script>
+</body>
+</html>
